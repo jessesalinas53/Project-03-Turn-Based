@@ -17,15 +17,22 @@ public class Health : MonoBehaviour
     [SerializeField] AudioSource audioSource;
     [SerializeField] Transform spawn;
 
+    Color origClr;
+    [SerializeField] Renderer renderer;
+
+    public HealthBar healthBar;
+
 
     private void Awake()
     {
         _currentHealth = _maxHealth;
+        origClr = renderer.material.color;
     }
 
     private void Update()
     {
-        if(_currentHealth <= 0)
+        healthBar.SetHealth(_currentHealth);
+        if (_currentHealth <= 0)
         {
             Die();
         }
@@ -33,14 +40,18 @@ public class Health : MonoBehaviour
     public void TakeDamage(int amount)
     {
         _currentHealth -= amount;
-        //damageParticles.Play();
         ParticleSystem newDamageParticles = Instantiate(damageParticles, spawn.position, Quaternion.identity);
         audioSource.PlayOneShot(damageAudio);
+        Flash();
     }
 
     public void Heal(int amount)
     {
         _currentHealth += amount;
+        if(_currentHealth > _maxHealth)
+        {
+            _currentHealth = _maxHealth;
+        }
         ParticleSystem newHealParticles = Instantiate(healParticles, spawn.position, Quaternion.identity);
         audioSource.PlayOneShot(healAudio);
     }
@@ -50,5 +61,16 @@ public class Health : MonoBehaviour
         ParticleSystem newDieParticles = Instantiate(dieParticles, spawn.position, Quaternion.identity);
         audioSource.PlayOneShot(dieAudio);
         this.gameObject.SetActive(false);
+    }
+
+    void Flash()
+    {
+        renderer.material.color = Color.white;
+        Invoke("ResetColor", .1f);
+    }
+
+    void ResetColor()
+    {
+        renderer.material.color = origClr;
     }
 }

@@ -5,6 +5,21 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField] GameObject player;
+    [SerializeField] GameObject enemy;
+
+    private void Update()
+    {
+        if(player.GetComponent<Health>()._currentHealth <= 0)
+        {
+            Lose();
+        }
+
+        if (enemy.GetComponent<Health>()._currentHealth <= 0)
+        {
+            Win();
+        }
+    }
     public void PlayGame()
     {
         SceneManager.LoadScene("SampleScene");

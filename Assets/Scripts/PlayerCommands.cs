@@ -10,6 +10,7 @@ public class PlayerCommands : MonoBehaviour
 
     CommandInvoker _commandInvoker = new CommandInvoker();
 
+    [SerializeField] GameObject _player;
     [SerializeField] GameObject _enemy;
     [SerializeField] GameObject _tile;
 
@@ -18,9 +19,9 @@ public class PlayerCommands : MonoBehaviour
     [SerializeField] GameObject _greyoutAttackImg;
     [SerializeField] GameObject _greyoutHealImg;
 
-    bool _selected = false;
+    public bool _selected = false;
     bool _canAttack = false;
-    bool _canHeal = false;
+    bool _canHeal = true;
     bool _hasAction = true;
 
     private void Awake()
@@ -98,22 +99,22 @@ public class PlayerCommands : MonoBehaviour
         }
     }
 
-    void Heal()
+    public void Heal()
     {
-        Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
+        //Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
 
-        if (Physics.Raycast(ray, out _hitInfo, Mathf.Infinity))
-        {
-            if (_hitInfo.transform.gameObject.tag == "Player")
-            {
-                GetComponent<Health>().Heal(2);
+        //if (Physics.Raycast(ray, out _hitInfo, Mathf.Infinity))
+        //{
+            //if (_hitInfo.transform.gameObject.tag == "Player")
+            //{
+                _player.GetComponent<Health>().Heal(3);
                 Debug.Log("Healed player. Health: " + GetComponent<Health>()._currentHealth);
 
                 _hasAction = false;
                 _selected = false;
                 Debug.Log("No Player selected.");
-            }
-        }
+            //}
+        //}
     }
 
     void ShowActions()
@@ -143,6 +144,20 @@ public class PlayerCommands : MonoBehaviour
     public void CanHeal()
     {
         _canHeal = true;
+    }
+
+    public void Reset()
+    {
+        _hasAction = true;
+        _canHeal = true;
+        _canAttack = true;
+    }
+
+    public void Deselect()
+    {
+        _selected = false;
+        _greyoutAttackImg.SetActive(false);
+        _greyoutHealImg.SetActive(false);
     }
 
     public void Undo()

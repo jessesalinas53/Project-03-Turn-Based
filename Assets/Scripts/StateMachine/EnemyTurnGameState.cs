@@ -10,10 +10,16 @@ public class EnemyTurnGameState : GameState
 
     [SerializeField] float _pauseDuration = 1.5f;
 
+    [SerializeField] GameObject enemy;
+    [SerializeField] GameObject player;
+
+    bool acted = false;
+
     public override void Enter()
     {
         Debug.Log("Enemy Turn: ...Enter");
         EnemyTurnBegan?.Invoke();
+        acted = false;
 
         StartCoroutine(EnemyThinkingRoutine(_pauseDuration));
     }
@@ -29,8 +35,35 @@ public class EnemyTurnGameState : GameState
         yield return new WaitForSeconds(pauseDuration);
 
         Debug.Log("Enemy performs action");
+        if(enemy.GetComponent<Health>()._currentHealth <= 8)
+        {
+            enemy.GetComponent<Health>().Heal(3);
+            Debug.Log("Enemy Healed");
+            acted = true;
+        }
+        else
+        {
+            Attack();
+        }
+
         EnemyTurnEnded?.Invoke();
         // turn over. Go back to player
-        StateMachine.ChangeState<PlayerTurnGameState>();
+        ChangeState();
+
+    }
+
+    void Attack()
+    {
+        player.GetComponent<Health>().TakeDamage(5);
+        Debug.Log("Enemy attacked");
+        acted = true;
+    }
+
+    void ChangeState()
+    {
+        if(acted == true)
+        {
+            StateMachine.ChangeState<PlayerTurnGameState>();
+        }
     }
 }
