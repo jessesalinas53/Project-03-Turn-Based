@@ -18,7 +18,7 @@ public class SpawnTokenCommand : ICommand
     public void Execute()
     {
         // hold onto token so we can undo the spawn later
-        _spawnedToken = _boardSpawner.SpawnToken(_position);
+        //_spawnedToken = _boardSpawner.SpawnToken(_position);
     }
 
     public void Undo()

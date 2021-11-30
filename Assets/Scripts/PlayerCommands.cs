@@ -1,15 +1,27 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerCommands : MonoBehaviour
 {
-    [SerializeField] BoardSpawner _boardSpawner = null;
-
     Camera _camera = null;
     RaycastHit _hitInfo;
 
     CommandInvoker _commandInvoker = new CommandInvoker();
+
+    [SerializeField] GameObject _enemy;
+    [SerializeField] GameObject _tile;
+
+    [SerializeField] Button _attackBtn = null;
+    [SerializeField] Button _healBtn = null;
+    [SerializeField] GameObject _greyoutAttackImg;
+    [SerializeField] GameObject _greyoutHealImg;
+
+    bool _selected = false;
+    bool _canAttack = false;
+    bool _canHeal = false;
+    bool _hasAction = true;
 
     private void Awake()
     {
@@ -18,18 +30,32 @@ public class PlayerCommands : MonoBehaviour
 
     private void Update()
     {
-        // Spawn Command
         if (Input.GetMouseButtonDown(0))
         {
-            GetNewMouseHit();
-            SpawnToken();
+            if (_selected == false)
+            {
+                SelectCharacter();
+            }
+            else if (_selected == true && _canAttack == true && _hasAction == true)
+            {
+                Attack();
+            }
+            else if (_selected == true && _canHeal == true && _hasAction == true)
+            {
+                Heal();
+            }
         }
-        // Buff Command
-        if (Input.GetMouseButtonDown(1))
+
+        if (_selected == true)
         {
-            GetNewMouseHit();
-            BuffToken();
+            ShowActions();
         }
+        else if (_selected == false)
+        {
+            HideActions();
+            _tile.GetComponent<Tile>().occupied = false;
+        }
+
         // Undo last command
         if (Input.GetKeyDown(KeyCode.Z))
         {
@@ -37,40 +63,90 @@ public class PlayerCommands : MonoBehaviour
         }
     }
 
-    void GetNewMouseHit()
+    void SelectCharacter()
     {
-        // spawn token at mouse position
         Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
 
         if(Physics.Raycast(ray, out _hitInfo, Mathf.Infinity))
         {
             Debug.Log("Ray hit: " + _hitInfo.transform.name);
+
+            if (_hitInfo.transform.gameObject.tag == "Player")
+            {
+                _selected = true;
+                _tile.GetComponent<Tile>().occupied = true;
+                Debug.Log("Player selected.");
+            }
+        }
+    }
+    private void Attack()
+    {
+        Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out _hitInfo, Mathf.Infinity))
+        {
+            if (_hitInfo.transform.gameObject.tag == "Enemy")
+            {
+                Debug.Log("Attacked enemy");
+                _enemy.GetComponent<Health>().TakeDamage(5);
+                Debug.Log("Enemy Health: " + _enemy.GetComponent<Health>()._currentHealth);
+
+                _hasAction = false;
+                _selected = false;
+                Debug.Log("No Player selected.");
+            }
         }
     }
 
-    void SpawnToken()
+    void Heal()
     {
-        // create the command
-        ICommand spawnTokenCommand = new SpawnTokenCommand(_boardSpawner, _hitInfo.point);
-        // perform the command
-        _commandInvoker.ExecuteCommand(spawnTokenCommand);
+        Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out _hitInfo, Mathf.Infinity))
+        {
+            if (_hitInfo.transform.gameObject.tag == "Player")
+            {
+                GetComponent<Health>().Heal(2);
+                Debug.Log("Healed player. Health: " + GetComponent<Health>()._currentHealth);
+
+                _hasAction = false;
+                _selected = false;
+                Debug.Log("No Player selected.");
+            }
+        }
+    }
+
+    void ShowActions()
+    {
+        _attackBtn.gameObject.SetActive(true);
+        _healBtn.gameObject.SetActive(true);
+
+        if (_hasAction == false)
+        {
+            _greyoutAttackImg.SetActive(true);
+            _greyoutHealImg.SetActive(true);
+        }
+        
+    }
+
+    void HideActions()
+    {
+        _attackBtn.gameObject.SetActive(false);
+        _healBtn.gameObject.SetActive(false);
+    }
+
+    public void CanAttack()
+    {
+        _canAttack = true;
+    }
+
+    public void CanHeal()
+    {
+        _canHeal = true;
     }
 
     public void Undo()
     {
         _commandInvoker.UndoCommand();
-    }
-
-    public void BuffToken()
-    {
-        // note, this search only works if the Collider and IBuffable
-        // component are attached to the same gameObject
-        IBuffable buffableUnit = _hitInfo.transform.GetComponent<IBuffable>();
-        // if we have the token, command it to buff
-        if(buffableUnit != null)
-        {
-            ICommand buffCommand = new BuffCommand(buffableUnit);
-            _commandInvoker.ExecuteCommand(buffCommand);
-        }
     }
 }

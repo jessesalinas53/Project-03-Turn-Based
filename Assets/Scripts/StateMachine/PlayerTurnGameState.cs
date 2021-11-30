@@ -8,6 +8,10 @@ public class PlayerTurnGameState : GameState
     [SerializeField] Text _playerTurnTextUI = null;
     [SerializeField] Button _winBtn = null;
     [SerializeField] Button _loseBtn = null;
+    [SerializeField] Button _moveBtn = null;
+    [SerializeField] Button _attackBtn = null;
+
+    [SerializeField] GameObject _player;
 
     int _playerTurnCount = 0;
 
@@ -15,8 +19,11 @@ public class PlayerTurnGameState : GameState
     {
         Debug.Log("Player Turn: ...Entering");
         _playerTurnTextUI.gameObject.SetActive(true);
-        _winBtn.gameObject.SetActive(true);
-        _loseBtn.gameObject.SetActive(true);
+        //_winBtn.gameObject.SetActive(true);
+        //_loseBtn.gameObject.SetActive(true);
+        //_moveBtn.gameObject.SetActive(true);
+        //_attackBtn.gameObject.SetActive(true);
+        _player.GetComponent<PlayerCommands>();
 
         _playerTurnCount++;
         _playerTurnTextUI.text = "Player Turn: " + _playerTurnCount.ToString();
@@ -29,6 +36,8 @@ public class PlayerTurnGameState : GameState
         _playerTurnTextUI.gameObject.SetActive(false);
         _winBtn.gameObject.SetActive(false);
         _loseBtn.gameObject.SetActive(false);
+        _moveBtn.gameObject.SetActive(false);
+        _attackBtn.gameObject.SetActive(false);
         // unhook from events
         StateMachine.Input.PressedConfirm -= OnPressedConfirm;
 
